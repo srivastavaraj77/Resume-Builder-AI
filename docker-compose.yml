@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: resume-builder-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  server:
+    image: node:20-alpine
+    container_name: resume-builder-api
+    working_dir: /app
+    command: sh -c "npm ci && npm start"
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGODB_URI: mongodb://mongo:27017/resume-builder
+      JWT_SECRET: change_me_before_production
+      GEMINI_API_KEY: ""
+      GEMINI_MODEL: gemini-2.5-flash
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    volumes:
+      - ./server:/app
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:

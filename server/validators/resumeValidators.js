@@ -34,6 +34,7 @@ export const validateUpdateResumePayload = (payload) => {
     "title",
     "template",
     "accent_color",
+    "is_fresher",
     "professional_summary",
     "personal_info",
     "experience",
@@ -65,6 +66,10 @@ export const validateUpdateResumePayload = (payload) => {
 
   if (updateData.accent_color !== undefined && typeof updateData.accent_color !== "string") {
     throw new ApiError(400, "VALIDATION_ERROR", "accent_color must be a string");
+  }
+
+  if (updateData.is_fresher !== undefined && typeof updateData.is_fresher !== "boolean") {
+    throw new ApiError(400, "VALIDATION_ERROR", "is_fresher must be a boolean");
   }
 
   if (

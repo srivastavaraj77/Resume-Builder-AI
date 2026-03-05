@@ -36,3 +36,58 @@ export const validateLoginPayload = (payload) => {
 
   return { email, password };
 };
+
+export const validateUpdateProfilePayload = (payload) => {
+  const allowedFields = ["name", "email", "phone", "location", "profession", "website", "linkedin", "bio"];
+  const nextPayload = {};
+
+  for (const field of allowedFields) {
+    if (payload?.[field] === undefined) continue;
+    nextPayload[field] = String(payload[field]).trim();
+  }
+
+  if (Object.keys(nextPayload).length === 0) {
+    throw new ApiError(400, "VALIDATION_ERROR", "At least one profile field is required");
+  }
+
+  if (nextPayload.email) {
+    nextPayload.email = normalizeEmail(nextPayload.email);
+    if (!nextPayload.email.includes("@")) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Invalid email format");
+    }
+  }
+
+  if (nextPayload.name !== undefined && !nextPayload.name) {
+    throw new ApiError(400, "VALIDATION_ERROR", "name cannot be empty");
+  }
+
+  return nextPayload;
+};
+
+export const validateChangePasswordPayload = (payload) => {
+  const currentPassword = String(payload?.currentPassword || "");
+  const newPassword = String(payload?.newPassword || "");
+  const confirmNewPassword = String(payload?.confirmNewPassword || "");
+
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      "currentPassword, newPassword and confirmNewPassword are required"
+    );
+  }
+
+  if (newPassword.length < 8) {
+    throw new ApiError(400, "VALIDATION_ERROR", "New password must be at least 8 characters");
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    throw new ApiError(400, "VALIDATION_ERROR", "New password and confirm password must match");
+  }
+
+  if (currentPassword === newPassword) {
+    throw new ApiError(400, "VALIDATION_ERROR", "New password must be different from current password");
+  }
+
+  return { currentPassword, newPassword };
+};

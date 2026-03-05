@@ -75,6 +75,16 @@ export const authApi = {
       body: JSON.stringify(body),
     }),
   me: () => request("/api/users/data"),
+  updateProfile: (body) =>
+    request("/api/users/profile", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  changePassword: (body) =>
+    request("/api/users/change-password", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
 };
 
 export const resumeApi = {
@@ -85,6 +95,7 @@ export const resumeApi = {
       body: JSON.stringify(body),
     }),
   getMineById: (resumeId) => request(`/api/resumes/${resumeId}`),
+  checkDownloadAccess: (resumeId) => request(`/api/resumes/${resumeId}/download-access`),
   getPublicById: (resumeId) => request(`/api/resumes/public/${resumeId}`),
   update: (resumeId, body) =>
     request(`/api/resumes/${resumeId}`, {
@@ -108,6 +119,17 @@ export const aiApi = {
       method: "POST",
       body: JSON.stringify({ summary }),
     }),
+  analyzeAts: ({ resumeId, resumeData, targetRole, includeAiFeedback = true }) =>
+    request("/api/ai/ats-analyze", {
+      method: "POST",
+      body: JSON.stringify({ resumeId, resumeData, targetRole, includeAiFeedback }),
+    }),
+  improveAts: ({ resumeId, resumeData, targetRole }) =>
+    request("/api/ai/ats-improve", {
+      method: "POST",
+      body: JSON.stringify({ resumeId, resumeData, targetRole }),
+    }),
+  getAtsHistory: (resumeId) => request(`/api/ai/ats-history/${resumeId}`),
 };
 
 export const importApi = {
@@ -126,4 +148,18 @@ export const importApi = {
       method: "POST",
       body: JSON.stringify({ title, parsedResume }),
     }),
+};
+
+export const paymentApi = {
+  createOrder: () =>
+    request("/api/payments/create-order", {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+  verifyPayment: (body) =>
+    request("/api/payments/verify", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  getStatus: () => request("/api/payments/status"),
 };

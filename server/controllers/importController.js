@@ -1,4 +1,4 @@
-import pdf from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import Resume from "../models/resume.js";
 import ApiError from "../utils/ApiError.js";
 import { sendSuccess } from "../utils/sendResponse.js";
@@ -260,7 +260,13 @@ export const previewImportedResume = async (req, res, next) => {
     }
 
     const title = (req.body.title || "").trim() || req.file.originalname.replace(/\.[^.]+$/, "");
-    const parsedPdf = await pdf(req.file.buffer);
+    const parser = new PDFParse({ data: req.file.buffer });
+    let parsedPdf;
+    try {
+      parsedPdf = await parser.getText();
+    } finally {
+      await parser.destroy();
+    }
     const extractedText = parsedPdf?.text?.trim() || "";
 
     if (!extractedText) {

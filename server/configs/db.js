@@ -1,5 +1,24 @@
 import mongoose from "mongoose";
 
+let listenersAttached = false;
+
+const registerConnectionListeners = () => {
+  if (listenersAttached) return;
+  listenersAttached = true;
+
+  mongoose.connection.on("connected", () => {
+    console.log("Database connected successfully");
+  });
+
+  mongoose.connection.on("error", (error) => {
+    console.error("Database connection error:", error.message);
+  });
+
+  mongoose.connection.on("disconnected", () => {
+    console.warn("Database disconnected");
+  });
+};
+
 const connectDB = async () => {
   const mongoDbUri = process.env.MONGODB_URI;
 
@@ -7,11 +26,16 @@ const connectDB = async () => {
     throw new Error("MONGODB_URI environment variable is not set");
   }
 
-  mongoose.connection.on("connected", () => {
-    console.log("Database connected successfully");
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  registerConnectionListeners();
+  await mongoose.connect(mongoDbUri, {
+    serverSelectionTimeoutMS: 10000,
   });
 
-  await mongoose.connect(mongoDbUri);
+  return mongoose.connection;
 };
 
 export default connectDB;

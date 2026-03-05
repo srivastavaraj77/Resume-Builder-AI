@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createResume,
+  checkDownloadAccess,
   deleteResume,
   getMyResumes,
   getPublicResumeById,
@@ -25,6 +26,11 @@ resumeRouter.use(protect);
 
 resumeRouter.get("/", getMyResumes);
 resumeRouter.post("/", validateRequest(validateCreateResumePayload), createResume);
+resumeRouter.get(
+  "/:resumeId/download-access",
+  validateParams(validateResumeIdParam),
+  checkDownloadAccess
+);
 resumeRouter.get("/:resumeId", validateParams(validateResumeIdParam), getResumeById);
 resumeRouter.put(
   "/:resumeId",

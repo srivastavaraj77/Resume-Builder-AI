@@ -1,5 +1,7 @@
 import Resume from "../models/resume.js";
+import User from "../models/User.js";
 import ApiError from "../utils/ApiError.js";
+import { assertDownloadAccess, assertTemplateAccess } from "../utils/entitlements.js";
 import { sendSuccess } from "../utils/sendResponse.js";
 
 export const createResume = async (req, res, next) => {
@@ -100,6 +102,14 @@ export const updateResume = async (req, res, next) => {
     const { resumeId } = req.validatedParams || req.params;
     const updateData = req.validatedBody;
 
+    if (updateData.template) {
+      const user = await User.findById(req.userId);
+      if (!user) {
+        throw new ApiError(404, "USER_NOT_FOUND", "User not found");
+      }
+      assertTemplateAccess(user, updateData.template);
+    }
+
     const updatedResume = await Resume.findOneAndUpdate(
       { _id: resumeId, userId: req.userId },
       updateData,
@@ -113,6 +123,24 @@ export const updateResume = async (req, res, next) => {
     return sendSuccess(res, {
       message: "Resume updated successfully",
       data: { resume: updatedResume },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const checkDownloadAccess = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      throw new ApiError(404, "USER_NOT_FOUND", "User not found");
+    }
+
+    assertDownloadAccess(user);
+
+    return sendSuccess(res, {
+      message: "Download allowed",
+      data: { allowed: true },
     });
   } catch (error) {
     return next(error);

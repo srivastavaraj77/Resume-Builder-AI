@@ -5,6 +5,17 @@ export const notFoundHandler = (req, _res, next) => {
 };
 
 export const errorHandler = (error, _req, res, _next) => {
+  if (error?.type === "entity.too.large" || error?.status === 413) {
+    return res.status(413).json({
+      success: false,
+      error: {
+        code: "PAYLOAD_TOO_LARGE",
+        message: "Uploaded image is too large. Please use a smaller image.",
+        details: null,
+      },
+    });
+  }
+
   if (error instanceof ApiError) {
     return res.status(error.statusCode).json({
       success: false,

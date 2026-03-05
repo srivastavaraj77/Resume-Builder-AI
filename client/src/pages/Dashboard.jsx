@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { importApi, resumeApi } from "../lib/api";
+import { aiApi, importApi, resumeApi } from "../lib/api";
 
 const Dashboard = () => {
   const colors = ["#9333ea", "#d97706", "#dc2626", "#0284c7", "#16a34a"];
@@ -26,6 +26,8 @@ const Dashboard = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isAnalyzingAts, setIsAnalyzingAts] = useState(false);
+  const [draftAtsAnalysis, setDraftAtsAnalysis] = useState(null);
 
   useEffect(() => {
     const loadResumes = async () => {
@@ -64,6 +66,7 @@ const Dashboard = () => {
     try {
       const data = await importApi.previewResumeFromPdf({ title, file: resume });
       setParsedResumeDraft(data.parsedResume);
+      setDraftAtsAnalysis(null);
       setShowImportReview(true);
       setShowUploadResume(false);
     } catch (error) {
@@ -74,6 +77,7 @@ const Dashboard = () => {
   };
 
   const handleDraftChange = (field, value) => {
+    setDraftAtsAnalysis(null);
     setParsedResumeDraft((prev) => ({
       ...prev,
       [field]: value,
@@ -81,6 +85,7 @@ const Dashboard = () => {
   };
 
   const handlePersonalInfoChange = (field, value) => {
+    setDraftAtsAnalysis(null);
     setParsedResumeDraft((prev) => ({
       ...prev,
       personal_info: {
@@ -111,6 +116,7 @@ const Dashboard = () => {
       });
       setShowImportReview(false);
       setParsedResumeDraft(null);
+      setDraftAtsAnalysis(null);
       setTitle("");
       setResume(null);
       navigate(`/app/builder/${data.resume._id}`);
@@ -118,6 +124,25 @@ const Dashboard = () => {
       setErrorMessage(error.message || "Failed to confirm import");
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const analyzeDraftAts = async () => {
+    if (!parsedResumeDraft) return;
+
+    setIsAnalyzingAts(true);
+    setErrorMessage("");
+    try {
+      const data = await aiApi.analyzeAts({
+        resumeData: parsedResumeDraft,
+        targetRole: parsedResumeDraft?.personal_info?.profession || "",
+        includeAiFeedback: true,
+      });
+      setDraftAtsAnalysis(data);
+    } catch (error) {
+      setErrorMessage(error.message || "Failed to analyze ATS score");
+    } finally {
+      setIsAnalyzingAts(false);
     }
   };
 
@@ -401,6 +426,38 @@ const Dashboard = () => {
                   Parsed experience: {parsedResumeDraft.experience?.length || 0} entries | education:{" "}
                   {parsedResumeDraft.education?.length || 0} | projects:{" "}
                   {parsedResumeDraft.project?.length || 0}
+                </div>
+
+                <div className="border border-slate-200 rounded-lg p-3 bg-slate-50">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">ATS Score Check</p>
+                    <button
+                      type="button"
+                      onClick={analyzeDraftAts}
+                      disabled={isAnalyzingAts}
+                      className="px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 disabled:opacity-50"
+                    >
+                      {isAnalyzingAts ? "Analyzing..." : "Check ATS Score"}
+                    </button>
+                  </div>
+
+                  {draftAtsAnalysis && (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-600">Score</span>
+                        <span className="font-semibold text-slate-800">
+                          {draftAtsAnalysis.score}/100 ({draftAtsAnalysis.grade})
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {(draftAtsAnalysis.improvements || []).map((item, index) => (
+                          <p key={`${item}-${index}`} className="text-xs text-slate-600">
+                            • {item}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

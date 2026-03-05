@@ -1,7 +1,7 @@
-import { Check, Layout } from 'lucide-react'
+import { Check, Layout, Lock } from 'lucide-react'
 import React, { useState } from 'react'
 
-const TemplateSelector = ({selectedTemplate, onChange}) => {
+const TemplateSelector = ({ selectedTemplate, onChange, userPlan = "free", onLockedTemplateClick }) => {
 
     const [isOpen, setIsOpen] = useState(false)
 
@@ -15,13 +15,15 @@ const TemplateSelector = ({selectedTemplate, onChange}) => {
         {
             id: "minimal-image",
             name: "Minimal-Image",
-            preview: "Minimal design with a single image and clean typography"
+            preview: "Minimal design with a single image and clean typography",
+            premium: true,
         },
         
         {
             id: "modern",
             name: "Modern",
-            preview: "Sleek design with strategic use of color and modern font choices"
+            preview: "Sleek design with strategic use of color and modern font choices",
+            premium: true,
         },
         
         {
@@ -44,8 +46,16 @@ const TemplateSelector = ({selectedTemplate, onChange}) => {
         {isOpen && (
             <div className='absolute top-full w-xs p-3 mt-2 space-y-3 z-10 bg-white rounded-md border border-gray-200 shadow-sm'>
                 {templates.map((template)=>(
-                    <div key={template.id} onClick={()=>{onChange(template.id);
-                        setIsOpen(false)}} className={`relative p-3 border rounded-md cursor-pointer
+                    <div key={template.id} onClick={()=>{
+                      const isLocked = template.premium && userPlan !== "pro"
+                      if (isLocked) {
+                        onLockedTemplateClick?.()
+                        setIsOpen(false)
+                        return
+                      }
+                      onChange(template.id);
+                      setIsOpen(false)
+                    }} className={`relative p-3 border rounded-md cursor-pointer
                             transition-all  ${selectedTemplate === template.id ? 
                                 "border-blue-400 bg-blue-100"
                                 : "border-gray-300 hover:border-gray-400 hover:bg-gray-100"
@@ -60,7 +70,15 @@ const TemplateSelector = ({selectedTemplate, onChange}) => {
                                 )}
 
                                 <div>
-                                    <h4 className='font-medium text-gray-800'>{template.name}</h4>
+                                    <h4 className='font-medium text-gray-800 flex items-center gap-2'>
+                                      {template.name}
+                                      {template.premium && userPlan !== "pro" && (
+                                        <span className='inline-flex items-center gap-1 text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded'>
+                                          <Lock className='size-3' />
+                                          Pro
+                                        </span>
+                                      )}
+                                    </h4>
                                     <div className='mt-2 p-2 bg-blue-50 rounded text-xs text-gray-500 italic'>{template.preview}</div>
                                 </div>
                             </div>

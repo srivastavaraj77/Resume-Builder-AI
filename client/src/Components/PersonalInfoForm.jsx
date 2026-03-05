@@ -7,6 +7,16 @@ const PersonalInfoForm = ({data, onChange , removeBackground , setRemoveBackgrou
         onChange({...data,[field ]:value})
       }
 
+      const handleImageUpload = (file) => {
+        if (!file) return
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const imageAsDataUrl = typeof reader.result === "string" ? reader.result : ""
+          handleChange("image", imageAsDataUrl)
+        }
+        reader.readAsDataURL(file)
+      }
+
 
       const fields = [
         { key: "full_name", label:"Full Name" , icon:User,type: "text", required: true   },
@@ -37,7 +47,7 @@ const PersonalInfoForm = ({data, onChange , removeBackground , setRemoveBackgrou
        
 
                 <img 
-                    src={typeof data.image === 'string' ? data.image : URL.createObjectURL(data.image)} 
+                    src={typeof data.image === 'string' ? data.image : ""} 
                     alt="user-image" 
                     className='w-16 h-16 rounded-full object-cover mt-5 ring ring-slate-300 hover:opacity-80' 
                 />
@@ -51,27 +61,8 @@ const PersonalInfoForm = ({data, onChange , removeBackground , setRemoveBackgrou
             )}
                    {/* Hidden file input → triggers when label is clicked */}
             <input type="file" accept = 'image/jpeg, image/png' className='hidden'
-            onChange={(e)=>handleChange("image",e.target.files[0])} />
+            onChange={(e)=>handleImageUpload(e.target.files?.[0])} />
         </label>
-              {/* Background Remove Toggle (only shows when file is uploaded, not for URL) */}
-        {typeof data.image ==='object' && (
-            <div className='flex flex-col gap-1 pl-4 text-sm'> 
-                <p>Remove Background</p>
-                {/* Custom toggle switch */}
-                <label className='relative inline-flex items-center cursor-pointer text-gray-900 gap-3'>
-
-                    <input type="checkbox" className='sr-only peer' onChange={()=>setRemoveBackground(prev => !prev)} 
-                    checked= {removeBackground} />
-                    {/* Background slider */}
-                    <div className='w-9 h-5 bg-slate-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-200'></div>
-                    {/* Slider circle */}
-                    <span className='dot absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform
-                    duration-200 ease-in-out peer-checked:translate-x-4'></span>
-                    
-                </label>
-            </div>
-        )}
-
       </div>
 
       {/*  Display the list of input fields  */}

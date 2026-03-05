@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../app.js";
+import User from "../models/User.js";
 import { registerAndLogin } from "./helpers.js";
 
 describe("Resume API", () => {
@@ -47,5 +48,56 @@ describe("Resume API", () => {
       .set("Authorization", `Bearer ${token}`);
     expect(deleteResponse.status).toBe(200);
     expect(deleteResponse.body.success).toBe(true);
+  });
+
+  it("blocks premium template updates but allows download access for free users", async () => {
+    const { token } = await registerAndLogin();
+
+    const createResponse = await request(app)
+      .post("/api/resumes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Free Plan Resume" });
+
+    const resumeId = createResponse.body.data.resume._id;
+
+    const premiumTemplateResponse = await request(app)
+      .put(`/api/resumes/${resumeId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ template: "modern" });
+    expect(premiumTemplateResponse.status).toBe(403);
+
+    const downloadAccessResponse = await request(app)
+      .get(`/api/resumes/${resumeId}/download-access`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(downloadAccessResponse.status).toBe(200);
+    expect(downloadAccessResponse.body.data.allowed).toBe(true);
+  });
+
+  it("allows premium template and download for pro users", async () => {
+    const { token, user } = await registerAndLogin();
+
+    await User.findByIdAndUpdate(user._id, {
+      plan: "pro",
+      subscriptionStatus: "active",
+    });
+
+    const createResponse = await request(app)
+      .post("/api/resumes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Pro Plan Resume" });
+
+    const resumeId = createResponse.body.data.resume._id;
+
+    const premiumTemplateResponse = await request(app)
+      .put(`/api/resumes/${resumeId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ template: "modern" });
+    expect(premiumTemplateResponse.status).toBe(200);
+
+    const downloadAccessResponse = await request(app)
+      .get(`/api/resumes/${resumeId}/download-access`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(downloadAccessResponse.status).toBe(200);
+    expect(downloadAccessResponse.body.data.allowed).toBe(true);
   });
 });
