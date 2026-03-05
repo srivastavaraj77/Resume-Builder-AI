@@ -1,8 +1,11 @@
 import { Lock, Mail, User2Icon } from 'lucide-react'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { authApi } from '../lib/api'
 
 const Login = () => {
 
+    const navigate = useNavigate()
     const query = new URLSearchParams(window.location.search)
     const urlState = query.get('state')
 
@@ -13,10 +16,42 @@ const Login = () => {
         email: '',
         password: ''
     })
+    const [isLoading, setIsLoading] = React.useState(false)
+    const [errorMessage, setErrorMessage] = React.useState('')
+    const [authNotice, setAuthNotice] = React.useState('')
+
+    React.useEffect(() => {
+        const notice = sessionStorage.getItem("auth_notice")
+        if (notice) {
+            setAuthNotice(notice)
+            sessionStorage.removeItem("auth_notice")
+        }
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setErrorMessage('')
+        setIsLoading(true)
+        try {
+            const response = state === "login"
+                ? await authApi.login({
+                    email: formData.email,
+                    password: formData.password
+                })
+                : await authApi.register({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password
+                })
 
+            localStorage.setItem("token", response.token)
+            localStorage.setItem("user", JSON.stringify(response.user))
+            navigate('/app')
+        } catch (error) {
+            setErrorMessage(error.message || "Authentication failed")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const handleChange = (e) => {
@@ -29,7 +64,13 @@ const Login = () => {
     
 
 
-    <div className='flex items-center justify-center min-h-screen bg-gray-50'>
+    <div className='flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4'>
+{authNotice && (
+    <div className='w-full max-w-[350px] mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 flex items-start justify-between gap-3'>
+        <span>{authNotice}</span>
+        <button type="button" onClick={() => setAuthNotice('')} className='text-amber-700 hover:text-amber-900'>x</button>
+    </div>
+)}
 <form onSubmit={handleSubmit} className="sm:w-[350px] w-full text-center border border-gray-300/60 rounded-2xl px-8 bg-white">
                 <h1 className="text-gray-900 text-3xl mt-10 font-medium">{state === "login" ? "Login" : "Sign up"}</h1>
                 <p className="text-gray-500 text-sm mt-2">Please {state} in to continue</p>
@@ -53,8 +94,9 @@ const Login = () => {
                     <button className="text-sm" type="reset">Forget password?</button>
                 </div>
                 <button type="submit" className="mt-2 w-full h-11 rounded-full text-white bg-green-500 hover:opacity-90 transition-opacity">
-                    {state === "login" ? "Login" : "Sign up"}
+                    {isLoading ? "Please wait..." : (state === "login" ? "Login" : "Sign up")}
                 </button>
+                {errorMessage && <p className='text-red-500 text-sm mt-2'>{errorMessage}</p>}
                 <p onClick={() => setState(prev => prev === "login" ? "register" : "login")} className="text-gray-500 text-sm mt-3 mb-11">{state === "login" ? "Don't have an account?" : "Already have an account?"} <a href="#" className="text-green-500 hover:underline">click here</a></p>
             </form>    </div>
   )

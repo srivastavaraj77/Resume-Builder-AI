@@ -1,6 +1,6 @@
 import React from 'react'
 import { Sparkles } from 'lucide-react'
-const ProffesionalSummaeyForm = ({data , onChange , setResumeData}) => {
+const ProffesionalSummaeyForm = ({data , onChange, onEnhance, isEnhancing }) => {
   return (
     <div className='space-y-4'>
 
@@ -20,10 +20,13 @@ const ProffesionalSummaeyForm = ({data , onChange , setResumeData}) => {
 
         {/* For right side hm ek button lagayege jisse summary enhance kr skte AI se */}
 
-        <button className=' flex items-center gap-2 px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded
-         hover:bg-purple-200 transition-colors disabled:opacity-50'>
+        <button
+        onClick={onEnhance}
+        disabled={isEnhancing || !(data || "").trim()}
+        className=' flex items-center gap-2 px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded
+         hover:bg-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'>
         <Sparkles className="size-4"/>
-        AI Enhance
+        {isEnhancing ? "Enhancing..." : "AI Enhance"}
         </button>
 
         </div>

@@ -80,16 +80,16 @@ Add Education
        
         <div className='grid md:grid-cols-2 gap-3'>
 
-          <input value={education.institute|| ""} onChange={(e)=>updateEducation(index, "institution"
+          <input value={education.institution|| ""} onChange={(e)=>updateEducation(index, "institution"
             , e.target.value
           )} type="text" placeholder='Institute Name' className='px-3 py-2 text-sm ' />
 
-          <input value={education.degree || ""} onChange={(e)=>updateEducation(index, "degree"
+          <input value={education.degree|| ""} onChange={(e)=>updateEducation(index, "degree"
             , e.target.value
           )} type="text" placeholder='Degree (e.g., Bachelours , Masters' className='px-3 py-2 text-sm ' />
 
 
-          <input value={education.field || ""} onChange={(e)=>updateEducation(index, "field"
+          <input value={education.field|| ""} onChange={(e)=>updateEducation(index, "field"
             , e.target.value
           )} type="text"  className='px-3 py-2 text-sm ' placeholder='Field of study' /> 
 

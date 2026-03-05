@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
-    const user = {name:'RAJ'}
-    const navigate= useState
+    const storedUser = localStorage.getItem("user")
+    const user = storedUser ? JSON.parse(storedUser) : null
+    const navigate= useNavigate()
 
     const logoutUser = ()=>{
-        navigate('/')
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        navigate('/login?state=login')
     }
   return (
     <div className='shadow bg-white'>
@@ -18,7 +21,7 @@ const Navbar = () => {
          
          </Link>
          <div className='flex items-center gap-4 text-sm'>
-            <p>Hi.{user?.name}</p>
+            <p>Hi.{user?.name || "User"}</p>
             <button onClick={logoutUser} className='bg-white hover:bg-slate-50 border-gray-300 px-7 py-1.5 rounded-full active:scale-95 transition-all'>Logout</button>
          </div>
 
