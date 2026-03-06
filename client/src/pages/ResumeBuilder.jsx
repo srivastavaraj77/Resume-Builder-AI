@@ -142,6 +142,20 @@ const ResumeBuilder = () => {
   const completionPercent = Math.round((completedSectionsCount / sections.length) * 100)
   const isResumeComplete = completedSectionsCount === sections.length
 
+  const sanitizeCertifications = (items) => {
+    if (!Array.isArray(items)) return []
+
+    return items.filter((item) => {
+      if (!item) return false
+      return (
+        String(item.name || '').trim() ||
+        String(item.issuer || '').trim() ||
+        String(item.date || '').trim() ||
+        String(item.description || '').trim()
+      )
+    })
+  }
+
   const getSavableResumeData = useCallback((data) => {
     if (!data) return null
 
@@ -156,7 +170,7 @@ const ResumeBuilder = () => {
       education: data.education,
       project: data.project,
       skills: data.skills,
-      certifications: data.certifications || [],
+      certifications: sanitizeCertifications(data.certifications || []),
     }
   }, [])
 
