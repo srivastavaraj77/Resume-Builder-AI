@@ -86,6 +86,25 @@ const MinimalImageTemplate = ({ data, accentColor }) => {
                         </section>
                     )}
 
+                    {data.certifications && data.certifications.length > 0 && (
+                        <section className="mb-8">
+                            <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">
+                                CERTIFICATIONS
+                            </h2>
+                            <div className="space-y-3 text-sm">
+                                {data.certifications.map((cert, index) => (
+                                    <div key={index}>
+                                        <p className="font-semibold uppercase">{cert.name}</p>
+                                        <p className="text-zinc-600">{cert.issuer}</p>
+                                        {cert.date && (
+                                            <p className="text-xs text-zinc-500">{formatDate(cert.date)}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
                     {data.skills && data.skills.length > 0 && (
                         <section>
                             <h2 className="text-sm font-semibold tracking-widest text-zinc-600 mb-3">

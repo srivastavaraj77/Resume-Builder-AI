@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema(
     razorpayOrderId: { type: String, default: "" },
     razorpayPaymentId: { type: String, default: "" },
     razorpaySignature: { type: String, default: "" },
+    resetOtp: { type: String, default: "" },
+    resetOtpExpires: { type: Date },
   },
   { timestamps: true }
 );

@@ -111,6 +111,32 @@ const MinimalTemplate = ({ data, accentColor }) => {
                 </section>
             )}
 
+            {/* Certifications */}
+            {data.certifications && data.certifications.length > 0 && (
+                <section className="mb-10">
+                    <h2 className="text-sm uppercase tracking-widest mb-6 font-medium" style={{ color: accentColor }}>
+                        Certifications
+                    </h2>
+
+                    <div className="space-y-4">
+                        {data.certifications.map((cert, index) => (
+                            <div key={index} className="flex justify-between items-baseline">
+                                <div>
+                                    <h3 className="font-medium">{cert.name}</h3>
+                                    <p className="text-gray-600">{cert.issuer}</p>
+                                    {cert.description && (
+                                        <p className="text-sm text-gray-500">{cert.description}</p>
+                                    )}
+                                </div>
+                                {cert.date && (
+                                    <span className="text-sm text-gray-500">{formatDate(cert.date)}</span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* Skills */}
             {data.skills && data.skills.length > 0 && (
                 <section>

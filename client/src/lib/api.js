@@ -85,6 +85,16 @@ export const authApi = {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
+  requestPasswordReset: (body) =>
+    request("/api/users/forgot-password", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  resetPasswordWithOtp: (body) =>
+    request("/api/users/reset-password", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 };
 
 export const resumeApi = {

@@ -138,6 +138,35 @@ const ClassicTemplate = ({ data, accentColor }) => {
                 </section>
             )}
 
+            {/* Certifications */}
+            {data.certifications && data.certifications.length > 0 && (
+                <section className="mb-6">
+                    <h2 className="text-xl font-semibold mb-4" style={{ color: accentColor }}>
+                        CERTIFICATIONS
+                    </h2>
+                    <div className="space-y-4">
+                        {data.certifications.map((cert, index) => (
+                            <div key={index} className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-semibold text-gray-900">
+                                        {cert.name || "Certification"}
+                                    </h3>
+                                    <p className="text-gray-700">{cert.issuer}</p>
+                                    {cert.description && (
+                                        <p className="text-sm text-gray-600">{cert.description}</p>
+                                    )}
+                                </div>
+                                {cert.date && (
+                                    <div className="text-sm text-gray-600">
+                                        <p>{formatDate(cert.date)}</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* Skills */}
             {data.skills && data.skills.length > 0 && (
                 <section className="mb-6">

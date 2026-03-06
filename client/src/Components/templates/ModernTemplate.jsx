@@ -169,6 +169,33 @@ const ModernTemplate = ({ data, accentColor }) => {
 					)}
 				</div>
 			</div>
+
+			{data.certifications && data.certifications.length > 0 && (
+				<section className="mb-8">
+					<h2 className="text-2xl font-light mb-4 pb-2 border-b border-gray-200">
+						Certifications
+					</h2>
+
+					<div className="space-y-4">
+						{data.certifications.map((cert, index) => (
+							<div key={index} className="relative pl-6 border-l border-gray-200 flex justify-between items-start">
+								<div>
+									<h3 className="text-lg font-medium text-gray-900">{cert.name}</h3>
+									<p className="text-gray-700" style={{ color: accentColor }}>{cert.issuer}</p>
+									{cert.description && (
+										<p className="text-gray-600 text-sm mt-1">{cert.description}</p>
+									)}
+								</div>
+								{cert.date && (
+									<div className="text-sm text-gray-500">
+										{formatDate(cert.date)}
+									</div>
+								)}
+							</div>
+						))}
+					</div>
+				</section>
+			)}
 		</div>
 	);
 }

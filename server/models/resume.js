@@ -46,6 +46,14 @@ const resumeSchema = new mongoose.Schema(
         description: { type: String, default: "" },
       },
     ],
+    certifications: [
+      {
+        name: { type: String, default: "" },
+        issuer: { type: String, default: "" },
+        date: { type: String, default: "" },
+        description: { type: String, default: "" },
+      },
+    ],
   },
   { timestamps: true, minimize: false }
 );

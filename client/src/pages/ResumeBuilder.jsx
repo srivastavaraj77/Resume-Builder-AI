@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, Link, useBlocker } from 'react-router-dom'
-import { ArrowLeftIcon, Briefcase, CheckCircle2, ChevronLeft, ChevronRight, Circle, Crown, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, Gauge, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react'
+import { ArrowLeftIcon, Award, Briefcase, CheckCircle2, ChevronLeft, ChevronRight, Circle, Crown, DownloadIcon, EyeIcon, EyeOffIcon, FileText, FolderIcon, Gauge, GraduationCap, Share2Icon, Sparkles, User } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
@@ -13,6 +13,7 @@ import ExperienceForm from '../Components/ExperienceForm'
 import EducationForm from '../Components/EducationForm'
 import ProjectForm from '../Components/ProjectForm'
 import SkillsForm from '../Components/SkillsForm'
+import CertificationForm from '../Components/CertificationForm'
 import Loader from '../Components/Loader'
 import { aiApi, paymentApi, resumeApi } from '../lib/api'
 import { loadRazorpayCheckoutScript } from '../lib/razorpay'
@@ -70,6 +71,7 @@ const ResumeBuilder = () => {
     { id: "summary", name: "Summary", icon: FileText },
     { id: "experience", name: "Experience", icon: Briefcase },
     { id: "education", name: "Education", icon: GraduationCap },
+    { id: "certifications", name: "Certifications", icon: Award },
     { id: "projects", name: "Projects", icon: FolderIcon },
     { id: "skills", name: "Skills", icon: Sparkles },
   ]
@@ -121,11 +123,15 @@ const ResumeBuilder = () => {
         )
       : false
 
+    const certifications = Array.isArray(resumeData.certifications)
+      ? resumeData.certifications.some((item) => String(item?.name || '').trim())
+      : false
+
     const skills = Array.isArray(resumeData.skills)
       ? resumeData.skills.filter((skill) => String(skill || '').trim()).length >= 3
       : false
 
-    return { personal, summary, experience, education, projects, skills }
+    return { personal, summary, experience, education, certifications, projects, skills }
   }, [resumeData])
 
   const completedSectionsCount = useMemo(
@@ -149,6 +155,7 @@ const ResumeBuilder = () => {
       education: data.education,
       project: data.project,
       skills: data.skills,
+      certifications: data.certifications || [],
     }
   }, [])
 
@@ -654,17 +661,25 @@ const ResumeBuilder = () => {
                   )
                 }
 
-{
+                {
                   activeSection.id === 'education' && (
                     <EducationForm data={resumeData.education}
-                    onChange={(data)=> setResumeData(prev=> ({...prev, education: data}))} 
+                    onChange={(data)=> setResumeData(prev=> ({...prev, education: data}))}
                     setResumeData={setResumeData}/>
+                  )
+                }
+                {
+                  activeSection.id === 'certifications' && (
+                    <CertificationForm
+                      data={resumeData.certifications || []}
+                      onChange={(data)=> setResumeData(prev=> ({...prev, certifications: data}))}
+                    />
                   )
                 }
 {
                   activeSection.id === 'projects' && (
                     <ProjectForm data={resumeData.project}
-                    onChange={(data)=> setResumeData(prev=> ({...prev, project: data}))} 
+                    onChange={(data)=> setResumeData(prev=> ({...prev, project: data}))}
                     setResumeData={setResumeData}/>
                   )
                 }

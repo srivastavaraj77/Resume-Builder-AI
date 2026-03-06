@@ -91,3 +91,39 @@ export const validateChangePasswordPayload = (payload) => {
 
   return { currentPassword, newPassword };
 };
+
+export const validatePasswordResetRequestPayload = (payload) => {
+  const email = normalizeEmail(payload?.email || "");
+  if (!email) {
+    throw new ApiError(400, "VALIDATION_ERROR", "email is required");
+  }
+  if (!email.includes("@")) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Invalid email format");
+  }
+  return { email };
+};
+
+export const validatePasswordResetPayload = (payload) => {
+  const email = normalizeEmail(payload?.email || "");
+  const otp = String(payload?.otp || "").trim();
+  const newPassword = String(payload?.newPassword || "");
+  const confirmNewPassword = String(payload?.confirmNewPassword || "");
+
+  if (!email || !otp || !newPassword || !confirmNewPassword) {
+    throw new ApiError(400, "VALIDATION_ERROR", "email, otp and new password fields are required");
+  }
+
+  if (!email.includes("@")) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Invalid email format");
+  }
+
+  if (newPassword.length < 8) {
+    throw new ApiError(400, "VALIDATION_ERROR", "New password must be at least 8 characters");
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    throw new ApiError(400, "VALIDATION_ERROR", "New password and confirm password must match");
+  }
+
+  return { email, otp, newPassword };
+};
