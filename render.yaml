@@ -1,7 +1,7 @@
 services:
   - type: web
     name: resume-builder-api
-    env: node
+    runtime: node
     rootDir: server
     buildCommand: npm ci
     startCommand: npm start
@@ -21,12 +21,11 @@ services:
         value: gemini-2.5-flash
       - key: CORS_ORIGINS
         sync: false
-
-staticSites:
-  - name: resume-builder-web
-    rootDir: client
-    buildCommand: npm ci && npm run build
-    publishPath: dist
+  - type: web
+    name: resume-builder-web
+    runtime: static
+    buildCommand: cd client && npm ci && npm run build
+    staticPublishPath: client/dist
     envVars:
       - key: VITE_API_BASE_URL
         sync: false
