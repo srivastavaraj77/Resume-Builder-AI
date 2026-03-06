@@ -62,6 +62,7 @@ const ResumeBuilder = () => {
         ...(rawResume?.personal_info || {}),
         image: safeImage,
       },
+      certifications: rawResume?.certifications || [],
     }
   }, [])
 

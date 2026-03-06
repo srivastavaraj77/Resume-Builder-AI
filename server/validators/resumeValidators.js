@@ -41,6 +41,7 @@ export const validateUpdateResumePayload = (payload) => {
     "education",
     "project",
     "skills",
+    "certifications",
     "public",
   ];
 
@@ -88,6 +89,7 @@ export const validateUpdateResumePayload = (payload) => {
   ensureArray(updateData.education, "education");
   ensureArray(updateData.project, "project");
   ensureArray(updateData.skills, "skills");
+  ensureArray(updateData.certifications, "certifications");
 
   return updateData;
 };
