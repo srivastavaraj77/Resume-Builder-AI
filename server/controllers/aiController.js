@@ -9,7 +9,7 @@ const buildPrompt = (summary) => {
     "Improve the following professional summary for a resume.",
     "Requirements:",
     "1) Keep it truthful and realistic.",
-    "2) Keep it concise (3-5 sentences).",
+    "2) Keep it concise (less than 300 words).",
     "3) Use strong professional language.",
     "4) Keep plain text output only (no markdown, no bullets).",
     "",
