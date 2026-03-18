@@ -38,6 +38,52 @@ describe("AI API", () => {
     expect(response.body.data.enhancedSummary).toContain("data scientist");
   });
 
+  it("retries when first enhanced summary is incomplete", async () => {
+    const { token } = await registerAndLogin();
+
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: "Highly accomplished Full Stack Developer with five" }],
+              },
+            },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: "Highly accomplished Full Stack Developer with five years of experience building scalable web applications using React, Node.js, and modern cloud tooling.",
+                  },
+                ],
+              },
+            },
+          ],
+        }),
+      });
+
+    const response = await request(app)
+      .post("/api/ai/enhance-summary")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        summary: "im a fsd with experience 5 years",
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.enhancedSummary).toMatch(/years of experience/i);
+    expect(response.body.data.enhancedSummary).toMatch(/[.!?]$/);
+  });
+
   it("rejects short summary", async () => {
     const { token } = await registerAndLogin();
     const response = await request(app)

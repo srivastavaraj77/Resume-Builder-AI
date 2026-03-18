@@ -264,8 +264,14 @@ export const previewImportedResume = async (req, res, next) => {
     let parsedPdf;
     try {
       parsedPdf = await parser.getText();
+    } catch (parserError) {
+      throw new ApiError(
+        400,
+        "PARSING_ERROR",
+        "Unable to parse this PDF. Please upload a text-based, unprotected PDF resume."
+      );
     } finally {
-      await parser.destroy();
+      await parser.destroy().catch(() => {});
     }
     const extractedText = parsedPdf?.text?.trim() || "";
 

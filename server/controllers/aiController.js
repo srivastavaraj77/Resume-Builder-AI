@@ -9,9 +9,11 @@ const buildPrompt = (summary) => {
     "Improve the following professional summary for a resume.",
     "Requirements:",
     "1) Keep it truthful and realistic.",
-    "2) Keep it concise (less than 300 words).",
+    "2) Keep it concise (45-90 words).",
     "3) Use strong professional language.",
     "4) Keep plain text output only (no markdown, no bullets).",
+    "5) Return exactly one complete paragraph.",
+    "6) End with proper sentence punctuation.",
     "",
     "Original summary:",
     summary,
@@ -288,11 +290,11 @@ const extractJsonObject = (rawText) => {
 
 const getWordCount = (text) => String(text || "").trim().split(/\s+/).filter(Boolean).length;
 
-const isLikelyCompleteSummary = (text) => {
+const isLikelyCompleteSummary = (text, { minWords = 8 } = {}) => {
   const summary = String(text || "").trim();
   if (!summary) return false;
   const wordCount = getWordCount(summary);
-  if (wordCount < 20) return false;
+  if (wordCount < minWords) return false;
 
   // Summary should end with sentence punctuation to avoid cut-off/incomplete outputs.
   if (!/[.!?]$/.test(summary)) return false;
@@ -306,12 +308,13 @@ const isLikelyCompleteSummary = (text) => {
 const shouldAcceptSummaryUpdate = ({ candidate, current }) => {
   const candidateSummary = String(candidate || "").trim();
   const currentSummary = String(current || "").trim();
+  const currentWords = getWordCount(currentSummary);
+  const minimumExpectedWords = currentWords > 0 ? Math.max(8, Math.floor(currentWords * 0.6)) : 8;
 
-  if (!isLikelyCompleteSummary(candidateSummary)) return false;
+  if (!isLikelyCompleteSummary(candidateSummary, { minWords: minimumExpectedWords })) return false;
   if (!currentSummary) return true;
 
   const candidateWords = getWordCount(candidateSummary);
-  const currentWords = getWordCount(currentSummary);
 
   // Reject if candidate is much shorter than current content.
   if (currentWords > 0 && candidateWords < Math.floor(currentWords * 0.7)) return false;
@@ -503,19 +506,38 @@ const computeAtsResult = async ({ resumeData, targetRole = "", includeAiFeedback
 export const enhanceSummary = async (req, res, next) => {
   try {
     const { summary } = req.validatedBody;
-    const { text: enhancedSummary, model: usedModel } = await requestGemini({
-      prompt: buildPrompt(summary),
-      maxOutputTokens: 220,
-    });
+    let candidateSummary = "";
+    let attempts = 0;
 
-    if (!enhancedSummary) {
+    while (attempts < 2) {
+      attempts += 1;
+      const { text, model } = await requestGemini({
+        prompt: buildPrompt(summary),
+        maxOutputTokens: 520,
+      });
+
+      const normalizedText = String(text || "").replace(/\s+/g, " ").trim();
+      if (normalizedText) {
+        candidateSummary = normalizedText;
+      }
+
+      if (shouldAcceptSummaryUpdate({ candidate: normalizedText, current: summary })) {
+        return sendSuccess(res, {
+          message: "Summary enhanced successfully",
+          data: { enhancedSummary: normalizedText, model },
+        });
+      }
+    }
+
+    if (!candidateSummary) {
       throw new ApiError(502, "AI_EMPTY_RESPONSE", "AI did not return enhanced content");
     }
 
-    return sendSuccess(res, {
-      message: "Summary enhanced successfully",
-      data: { enhancedSummary, model: usedModel },
-    });
+    throw new ApiError(
+      502,
+      "AI_INCOMPLETE_RESPONSE",
+      "AI returned incomplete summary text. Please try again."
+    );
   } catch (error) {
     return next(error);
   }
@@ -596,7 +618,7 @@ export const improveAtsWithAi = async (req, res, next) => {
         try {
           const { text } = await requestGemini({
             prompt: buildPrompt(currentSummary),
-            maxOutputTokens: 220,
+            maxOutputTokens: 440,
           });
           improvedSummary = text;
         } catch {

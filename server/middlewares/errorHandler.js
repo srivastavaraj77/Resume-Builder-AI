@@ -5,6 +5,28 @@ export const notFoundHandler = (req, _res, next) => {
 };
 
 export const errorHandler = (error, _req, res, _next) => {
+  if (error?.name === "MulterError") {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        success: false,
+        error: {
+          code: "PAYLOAD_TOO_LARGE",
+          message: "Resume file is too large. Please upload a PDF smaller than 5MB.",
+          details: null,
+        },
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        message: error.message || "Invalid upload request",
+        details: null,
+      },
+    });
+  }
+
   if (error?.type === "entity.too.large" || error?.status === 413) {
     return res.status(413).json({
       success: false,
