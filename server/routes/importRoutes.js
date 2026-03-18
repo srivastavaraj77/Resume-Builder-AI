@@ -8,11 +8,13 @@ import protect from "../middlewares/authMiddleware.js";
 import ApiError from "../utils/ApiError.js";
 
 const importRouter = express.Router();
+const parsedLimitMb = Number(process.env.IMPORT_MAX_FILE_SIZE_MB || 10);
+const maxUploadSizeMb = Number.isFinite(parsedLimitMb) && parsedLimitMb > 0 ? parsedLimitMb : 10;
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: maxUploadSizeMb * 1024 * 1024,
   },
   fileFilter: (_req, file, cb) => {
     const mimeType = String(file.mimetype || "").toLowerCase();

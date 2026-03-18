@@ -5,13 +5,17 @@ export const notFoundHandler = (req, _res, next) => {
 };
 
 export const errorHandler = (error, _req, res, _next) => {
+  const parsedImportLimitMb = Number(process.env.IMPORT_MAX_FILE_SIZE_MB || 10);
+  const importLimitMb =
+    Number.isFinite(parsedImportLimitMb) && parsedImportLimitMb > 0 ? parsedImportLimitMb : 10;
+
   if (error?.name === "MulterError") {
     if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(413).json({
         success: false,
         error: {
           code: "PAYLOAD_TOO_LARGE",
-          message: "Resume file is too large. Please upload a PDF smaller than 5MB.",
+          message: `Resume file is too large. Please upload a PDF smaller than ${importLimitMb}MB.`,
           details: null,
         },
       });
