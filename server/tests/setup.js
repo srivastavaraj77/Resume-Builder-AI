@@ -76,7 +76,17 @@ afterEach(async () => {
 
 afterAll(async () => {
   if (connectedToExternalMongo && mongoose.connection.readyState === 1) {
-    await mongoose.connection.dropDatabase();
+    try {
+      await mongoose.connection.dropDatabase();
+    } catch (error) {
+      const isUnauthorizedDrop =
+        error?.name === "MongoServerError" &&
+        (error?.codeName === "Unauthorized" ||
+          /not allowed to do action \[dropDatabase\]/i.test(error?.message || ""));
+      if (!isUnauthorizedDrop) {
+        throw error;
+      }
+    }
   }
   await mongoose.disconnect();
   if (mongoServer) {
