@@ -6,11 +6,10 @@ services:
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /healthz
+    autoDeployTrigger: commit
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
@@ -46,8 +45,10 @@ services:
   - type: web
     name: resume-builder-web
     runtime: static
-    buildCommand: cd client && npm ci && npm run build
+    rootDir: client
+    buildCommand: npm ci && npm run build
     staticPublishPath: client/dist
+    autoDeployTrigger: commit
     routes:
       - type: rewrite
         source: /*
